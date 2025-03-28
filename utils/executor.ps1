@@ -9,12 +9,3 @@ function deleteData {
     $message = "$(localTime) INFO: Successfully deleted path: $path."
     $message | Tee-Object -FilePath "$(Get-Location)\logs\system.log" -Append
 }
-
-
-function deleteTask {
-    param ([string]$taskId)
-
-    $message = "$(localTime) INFO: Task: $taskId successfully deleted."
-    Unregister-ScheduledTask -TaskName $taskId -Confirm:$false -ErrorAction Stop
-    $message | Tee-Object -FilePath "$(Get-Location)\logs\system.log" -Append
-}

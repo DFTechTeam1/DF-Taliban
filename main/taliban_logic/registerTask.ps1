@@ -35,7 +35,7 @@ function restartScriptAsAdmin {
     exit
 }
 
-function registerDeleteTask {
+function registerTask {
     param (
         [datetime]$triggerTime,
         [string]$path,
@@ -75,4 +75,4 @@ if (-not (checkAdminPrivileges)) {
     restartScriptAsAdmin -date $date -time $time -path $path -taskId $taskId
 }
 
-registerDeleteTask -triggerTime $validatedDatetime -path $path -taskId $taskId
+registerTask -triggerTime $validatedDatetime -path $path -taskId $taskId

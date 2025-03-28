@@ -11,13 +11,11 @@ function validatePath {
     $message | Tee-Object -FilePath "$(Get-Location)\logs\system.log" -Append
 
     if ($restrictedPath -contains $path) {
-        $message = "$(localTime) ERROR: Access denied! Modification of $path is not allowed."
-        throw $message
+        throw "ERROR: Access denied! Modification of $path is not allowed."
     }
 
     if (-Not (Test-Path -Path $path)) {
-        $message = "$(localTime) ERROR: Invalid path. Please ensure path $path has an existing file or directory."
-        throw $message
+        throw "ERROR: Invalid path. Please ensure path $path has an existing file or directory."
     }
 
     $message = "$(localTime) INFO: Path validated."
@@ -31,8 +29,7 @@ function validateTask {
     $task = Get-ScheduledTask -TaskName $taskId -ErrorAction SilentlyContinue
 
     if (-Not $task) {
-        $message = "$(localTime) ERROR: Task $taskId not found."
-        throw $message
+        throw "ERROR: Task $taskId not found."
     }
 
 }
@@ -41,18 +38,18 @@ function validateDatetime {
     param([string]$date, [string]$time)
 
     if ($date.Length -ne 8 -or $date -notmatch "^\d{8}$") {
-        throw "$(localTime) ERROR: Date should be in YYYYMMDD format (e.g: 20250327)."
+        throw "ERROR: Date should be in YYYYMMDD format (e.g: 20250327)."
     }
 
     if ($time.Length -ne 4 -or $time -notmatch "^\d{4}$") {
-        throw "$(localTime) ERROR: Time should be in HHmm format (e.g: 2359)."
+        throw "ERROR: Time should be in HHmm format (e.g: 2359)."
     }
 
     $datetime = "$date $time"
     $currentTime = Get-Date
     $convertedDatetime = [datetime]::ParseExact($datetime, "yyyyMMdd HHmm", $null)
     if ($convertedDatetime -le $currentTime) {
-        throw "$(localTime) ERROR: Time input should be more than $currentTime"
+        throw "ERROR: Time input should be more than $currentTime"
     }
 
     return $convertedDatetime

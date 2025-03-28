@@ -31,3 +31,8 @@ function createLog {
         $message | Tee-Object -FilePath "$(Get-Location)\logs\system.log" -Append
     }
 }
+
+function generateTaskId {
+    $taskId = "bomb_$(New-Guid)"
+    return $taskId
+}
