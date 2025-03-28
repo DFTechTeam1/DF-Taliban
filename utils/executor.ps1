@@ -1,28 +1,20 @@
-function delete_data {
+function deleteData {
     param ([string]$path)
 
     $message = "$(localTime) INFO: Deleting data: $path."
-    $message | Tee-Object -FilePath $logFile -Append
+    $message | Tee-Object -FilePath "$(Get-Location)\logs\system.log" -Append
 
     Remove-Item -Path "$path" -Recurse -Force
 
     $message = "$(localTime) INFO: Successfully deleted path: $path."
-    $message | Tee-Object -FilePath $logFile -Append
+    $message | Tee-Object -FilePath "$(Get-Location)\logs\system.log" -Append
 }
 
-function delete_task {
-    param ([string]$task_id)
 
-    $message = "$(localTime) INFO: Task: $task_id successfully deleted."
-    Unregister-ScheduledTask -TaskName $task_id -Confirm:$false -ErrorAction Stop
-    $message | Tee-Object -FilePath $logFile -Append
-}
+function deleteTask {
+    param ([string]$taskId)
 
-function create_task {
-    param (
-        [string]$path_directory,
-        [string]$date,
-        [string]$time,
-        [string]$task_id
-    )
+    $message = "$(localTime) INFO: Task: $taskId successfully deleted."
+    Unregister-ScheduledTask -TaskName $taskId -Confirm:$false -ErrorAction Stop
+    $message | Tee-Object -FilePath "$(Get-Location)\logs\system.log" -Append
 }
