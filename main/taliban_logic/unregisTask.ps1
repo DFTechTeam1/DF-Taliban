@@ -7,9 +7,6 @@ param ([string]$taskId)
 createLog
 init
 
-function checkAdminPrivileges {
-    return ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
-}
 
 function restartScriptAsAdmin {
     param ([string]$taskId)

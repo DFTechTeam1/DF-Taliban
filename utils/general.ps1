@@ -36,3 +36,7 @@ function generateTaskId {
     $taskId = "bomb_$(New-Guid)"
     return $taskId
 }
+
+function checkAdminPrivileges {
+    return ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
+}
