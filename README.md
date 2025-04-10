@@ -1,7 +1,7 @@
-# Auto Delete App
+# DF-Taliban
 
 ## Overview
-The **Auto Delete App** is designed to help users register tasks for automatic deletion of files or folders at a future time. This tool is particularly useful for automating cleanup tasks and managing data retention policies.
+The **DF-Taliban** is designed to help users register tasks for automatic deletion of files or folders at a future time. This tool is particularly useful for automating cleanup tasks and managing data retention policies.
 
 ## Features
 - [x] Register tasks for future file or folder deletion (Supported delete file or folder direcly after trigger time is passed).
