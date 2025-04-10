@@ -239,6 +239,7 @@ $registerTaskBtn.Add_Click({
             [System.Windows.Forms.MessageBoxButtons]::OK,
             [System.Windows.Forms.MessageBoxIcon]::Information
         )
+        Write-Host "Scheduled delete $path at $dateStr $timestr"
     }
     catch {
         [System.Windows.Forms.MessageBox]::Show(
