@@ -17,17 +17,15 @@ The **Auto Delete App** is designed to help users register tasks for automatic d
 ```
 
 ## Usage
-```
-Registering a Task:
-
+### Registering a Task:
 1. Open the application by running execute.bat.
 2. Select a file or folder to be deleted.
 3. Set the desired date and time for deletion.
 4. Click Register Task to schedule the deletion.
 
-Unregistering a Task (Coming Soon):
-This feature will allow users to remove scheduled deletion tasks.
-```
+### Unregistering a Task (Coming Soon):
+- This feature will allow users to remove scheduled deletion tasks.
+
 ## Notes
 - This application is under development and is intended for internal workflow automation purposes.
 - Make sure you provide a valid file or folder path when registering a task.
