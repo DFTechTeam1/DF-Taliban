@@ -225,7 +225,7 @@ $registerTaskBtn.Add_Click({
     $timeStr = $timePicker.Value.ToString("HHmm")
     $path = $dirPath.Text
     $guid = [guid]::NewGuid().ToString()
-    $taskId = "task_" + $guid.Substring(0, 8)
+    $taskId = "taliban_" + $guid.Substring(0, 8)
     Write-Host "Created $taskId"
 
     $scriptPath = (Resolve-Path -Path "$PSScriptRoot\..\logic\registerTask.ps1").Path

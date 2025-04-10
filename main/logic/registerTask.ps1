@@ -13,7 +13,14 @@ createLog
 init
 
 $validatedDatetime = validateDatetime -date $date -time $time
+
 validatePath -path $path
+
+function checkAdminPrivileges {
+    $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+    $principal = New-Object Security.Principal.WindowsPrincipal($identity)
+    return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
 
 function restartScriptAsAdmin {
     param (
@@ -43,13 +50,12 @@ function registerTask {
     try {
         $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$fileRemover`" -pathDirectory `"$path`""
         $trigger = New-ScheduledTaskTrigger -Once -At $triggerTime
-        $principal = New-ScheduledTaskPrincipal -UserId "NT AUTHORITY\SYSTEM" -LogonType ServiceAccount -RunLevel Highest
         $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries `
                                                  -DontStopIfGoingOnBatteries `
                                                  -StartWhenAvailable `
                                                  -DontStopOnIdleEnd `
                                                  -ExecutionTimeLimit (New-TimeSpan -Minutes 5)
-
+        $principal = New-ScheduledTaskPrincipal -UserId "NT AUTHORITY\SYSTEM" -LogonType ServiceAccount -RunLevel Highest
         Register-ScheduledTask -TaskName $taskId `
                                -Action $action `
                                -Trigger $trigger `
@@ -72,6 +78,5 @@ if (-not (checkAdminPrivileges)) {
 } else {
     [System.Windows.Forms.MessageBox]::Show("Running with elevated privileges", "Admin")
 }
-
 
 registerTask -triggerTime $validatedDatetime -path $path -taskId $taskId
