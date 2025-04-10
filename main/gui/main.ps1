@@ -1,167 +1,266 @@
 Add-Type -AssemblyName System.Windows.Forms
 
-# Create Form
-$form = New-Object System.Windows.Forms.Form
-$form.Text = "DF Taliban"
-$form.Size = New-Object System.Drawing.Size(450,350)
-$form.StartPosition = "CenterScreen"
+function BaseApplication {
+    param (
+        [int]$width = 400,
+        [int]$height = 280,
+        [string]$title = "DF Taliban"
+    )
+    $form = New-Object System.Windows.Forms.Form
+    $form.Text = $title
+    $form.Size = New-Object System.Drawing.Size($width, $height)
+    $form.StartPosition = "CenterScreen"
 
-# Create Tab Control
-$tabControl = New-Object System.Windows.Forms.TabControl
-$tabControl.Size = New-Object System.Drawing.Size(430,280)
-$tabControl.Location = New-Object System.Drawing.Point(10,10)
-$form.Controls.Add($tabControl)
-
-# Create First Tab (Main UI)
-$tabPage1 = New-Object System.Windows.Forms.TabPage
-$tabPage1.Text = "Add Bomb"
-$tabControl.TabPages.Add($tabPage1)
-
-# Date Label
-$dateLabel = New-Object System.Windows.Forms.Label
-$dateLabel.Text = "Date: "
-$dateLabel.Location = New-Object System.Drawing.Point(20,40)
-$dateLabel.AutoSize = $true
-$tabPage1.Controls.Add($dateLabel)
-
-# Date Picker
-$datePicker = New-Object System.Windows.Forms.DateTimePicker
-$datePicker.Format = [System.Windows.Forms.DateTimePickerFormat]::Custom
-$datePicker.CustomFormat = "dddd,dd MMMM yyyy"
-$datePicker.Location = New-Object System.Drawing.Point(100,40)
-$tabPage1.Controls.Add($datePicker)
-
-# Date of Explosion Label
-$explosionLabel = New-Object System.Windows.Forms.Label
-$explosionLabel.Text = "Date of explosion"
-$explosionLabel.Location = New-Object System.Drawing.Point(20,10)
-$explosionLabel.AutoSize = $true
-$tabPage1.Controls.Add($explosionLabel)
-
-# Time Label
-$timeLabel = New-Object System.Windows.Forms.Label
-$timeLabel.Text = "Time: "
-$timeLabel.Location = New-Object System.Drawing.Point(20,80)
-$timeLabel.AutoSize = $true
-$tabPage1.Controls.Add($timeLabel)
-
-# Time Picker
-$timePicker = New-Object System.Windows.Forms.DateTimePicker
-$timePicker.Format = [System.Windows.Forms.DateTimePickerFormat]::Custom
-$timePicker.CustomFormat = "HH:mm:ss"
-$timePicker.ShowUpDown = $true
-$timePicker.Location = New-Object System.Drawing.Point(100,80)
-$tabPage1.Controls.Add($timePicker)
-
-# Directory Label
-$dirLabel = New-Object System.Windows.Forms.Label
-$dirLabel.Text = "Directory: "
-$dirLabel.Location = New-Object System.Drawing.Point(20,120)
-$dirLabel.AutoSize = $true
-$tabPage1.Controls.Add($dirLabel)
-
-# Directory Text Field
-$dirTextBox = New-Object System.Windows.Forms.TextBox
-$dirTextBox.Location = New-Object System.Drawing.Point(100,120)
-$dirTextBox.Size = New-Object System.Drawing.Size(200,20)
-$tabPage1.Controls.Add($dirTextBox)
-
-# Directory Picker Button
-$dirButton = New-Object System.Windows.Forms.Button
-$dirButton.Text = "..."
-$dirButton.Location = New-Object System.Drawing.Point(300,120)
-$dirButton.Size = New-Object System.Drawing.Size(30,20)
-$tabPage1.Controls.Add($dirButton)
-
-# Folder Browser Dialog
-$folderDialog = New-Object System.Windows.Forms.FolderBrowserDialog
-$dirButton.Add_Click({
-    if ($folderDialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
-        $dirTextBox.Text = $folderDialog.SelectedPath
-    }
-})
-
-# Submit Button
-$submitButton = New-Object System.Windows.Forms.Button
-$submitButton.Text = "Add Bomb"
-$submitButton.Location = New-Object System.Drawing.Point(20,160)
-$tabPage1.Controls.Add($submitButton)
-
-# Submit Action
-$submitButton.Add_Click({
-    $selectedDate = $datePicker.Value.ToString("yyyyMMdd")
-    $selectedTime = $timePicker.Value.ToString("HHmmss")
-    $selectedDir = $dirTextBox.Text
-    
-    # Generate random 6-digit number
-    $randomNumber = -join ((48..57) | Get-Random -Count 6 | ForEach-Object {[char]$_})
-    $taskName = "bomb_" + $randomNumber
-    
-    # Run external script with parameters
-    Start-Process powershell.exe -ArgumentList "-ExecutionPolicy Bypass -File .\tools\create_task.ps1 -taskName '$taskName' -fullpath '$selectedDir' -date '$selectedDate' -time '$selectedTime'" -WindowStyle Hidden
-})
-
-# Create Second Tab (Task Management)
-$tabPage2 = New-Object System.Windows.Forms.TabPage
-$tabPage2.Text = "Delete Bomb"
-$tabControl.TabPages.Add($tabPage2)
-
-# Task List
-$taskList = New-Object System.Windows.Forms.ListBox
-$taskList.Location = New-Object System.Drawing.Point(20,20)
-$taskList.Size = New-Object System.Drawing.Size(380,120)
-$tabPage2.Controls.Add($taskList)
-
-# Refresh Button
-$refreshButton = New-Object System.Windows.Forms.Button
-$refreshButton.Text = "Refresh"
-$refreshButton.Location = New-Object System.Drawing.Point(320,150)
-$tabPage2.Controls.Add($refreshButton)
-
-# Load Tasks Function
-function Load-Tasks {
-    $taskList.Items.Clear()
-    $tasks = Get-ScheduledTask | Where-Object {$_.TaskName -like "bomb_*"}
-    foreach ($task in $tasks) {
-        $taskList.Items.Add($task.TaskName)
-    }
+    return $form
 }
 
-# Initial Load
-Load-Tasks
+function BaseContainer {
+    param (
+        [int]$width = 430,
+        [int]$height = 280
+    )
+    $tabControl = New-Object System.Windows.Forms.TabControl
+    $tabControl.Size = New-Object System.Drawing.Size($width, $height)
+    $tabControl.Location = New-Object System.Drawing.Point(10,10)
 
-$refreshButton.Add_Click({ Load-Tasks })
+    return $tabControl
+}
 
-# Task Details Label
-$taskDetails = New-Object System.Windows.Forms.Label
-$taskDetails.Location = New-Object System.Drawing.Point(20,180)
-$taskDetails.Size = New-Object System.Drawing.Size(380,40)
-$tabPage2.Controls.Add($taskDetails)
+function AddBombTab {
+    $addBombTab = New-Object System.Windows.Forms.TabPage
+    $addBombTab.Text = "Add Bomb"
 
-# Task Selection Event
-$taskList.Add_SelectedIndexChanged({
-    $selectedTask = $taskList.SelectedItem
-    if ($selectedTask) {
-        $taskInfo = Get-ScheduledTask | Where-Object {$_.TaskName -eq $selectedTask}
-        $runTime = [DateTime]::Parse($taskInfo.Triggers[0].StartBoundary).ToString("dd/MM/yyyy 'at' HH:mm")
-        $taskDetails.Text = "Run Time: " + $runTime + [System.Environment]::NewLine + "Directory: " + ($taskInfo.Actions[0].Arguments -replace '.*-Path "([^"]+)".*', '$1')
+    return $addBombTab
+}
+
+function CreatePlaceholder {
+    param (
+        [string]$label,
+        [int]$xLocation,
+        [int]$yLocation,
+        [int]$width = 80
+    )
+    
+    $placeholder = New-Object System.Windows.Forms.Label
+    $placeholder.Text = $label
+    $placeholder.Location = New-Object System.Drawing.Point($xLocation, $yLocation)
+    $placeholder.Size = New-Object System.Drawing.Size($width, 20)
+    $placeholder.TextAlign = "MiddleLeft"
+
+    return $placeholder
+
+}
+
+function DatePicker {
+    param(
+        [int]$xLocation,
+        [int]$yLocation,
+        [int]$width = 200
+    )
+    $date = New-Object System.Windows.Forms.DateTimePicker
+    $date.Format = [System.Windows.Forms.DateTimePickerFormat]::Short
+    $date.Location = New-Object System.Drawing.Point($xLocation, $yLocation)
+    $date.Size = New-Object System.Drawing.Size($width, 20)
+    return $date
+}
+
+function TimePicker {
+    param (
+        [int]$xLocation,
+        [int]$yLocation,
+        [int]$width = 200
+    )
+    $time = New-Object System.Windows.Forms.DateTimePicker
+    $time.Format = [System.Windows.Forms.DateTimePickerFormat]::Custom
+    $time.CustomFormat = "HH:mm:ss"
+    $time.ShowUpDown = $true
+    $time.Location = New-Object System.Drawing.Point($xLocation, $yLocation)
+    $time.Size = New-Object System.Drawing.Size($width, 20)
+    return $time
+}
+
+function TextBox {
+    param (
+        [int]$xLocation,
+        [int]$yLocation,
+        [int]$width = 200
+    )
+    
+    $textBox = New-Object System.Windows.Forms.TextBox
+    $textBox.Location = New-Object System.Drawing.Point($xLocation, $yLocation)
+    $textBox.Size = New-Object System.Drawing.Size($width, 20)
+    return $textBox
+}
+
+
+function TimePicker {
+    param (
+        [int]$xLocation,
+        [int]$yLocation,
+        [int]$width = 200
+    )
+    $time = New-Object System.Windows.Forms.DateTimePicker
+    $time.Format = [System.Windows.Forms.DateTimePickerFormat]::Custom
+    $time.CustomFormat = "HH:mm:ss"
+    $time.ShowUpDown = $true
+    $time.Location = New-Object System.Drawing.Point($xLocation, $yLocation)
+    $time.Size = New-Object System.Drawing.Size($width, 20)
+    return $time
+}
+
+function TextBox {
+    param (
+        [int]$xLocation,
+        [int]$yLocation,
+        [int]$width = 200
+    )
+    
+    $textBox = New-Object System.Windows.Forms.TextBox
+    $textBox.Location = New-Object System.Drawing.Point($xLocation, $yLocation)
+    $textBox.Size = New-Object System.Drawing.Size($width, 20)
+    return $textBox
+}
+
+function CustomBtn {
+    param (
+        [int]$xLocation,
+        [int]$yLocation,
+        [int]$xSize,
+        [int]$ySize,
+        [string]$btnTitle
+    )
+
+    $customBtn = New-Object System.Windows.Forms.Button
+    $customBtn.Text = $btnTitle
+    $customBtn.Location = New-Object System.Drawing.Point($xLocation, $yLocation)
+    $customBtn.Size = New-Object System.Drawing.Size($xSize, $ySize)
+
+    return $customBtn
+}
+
+if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(`
+    [Security.Principal.WindowsBuiltInRole] "Administrator")) {
+    
+    Start-Process powershell.exe "-ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs
+    exit
+}
+
+
+$mainForm = BaseApplication
+$tabControl = BaseContainer
+$bombTab = AddBombTab
+$deletedAtPlaceholder = CreatePlaceholder -label "Deleted at:" -xLocation 20 -yLocation 10
+$datePlaceholder = CreatePlaceholder -label "Date:" -xLocation 20 -yLocation 40
+$timePlaceholder = CreatePlaceholder -label "Time:" -xLocation 20 -yLocation 80
+$directoryPlaceholder = CreatePlaceholder -label "Directory:" -xLocation 20 -yLocation 120
+$datePicker = DatePicker -xLocation 100 -yLocation 40
+$timePicker = TimePicker -xLocation 100 -yLocation 80
+$dirPath = TextBox -xLocation 100 -yLocation 120 -width 165
+$dirBtnX = $dirPath.Location.X + $dirPath.Size.Width + 5
+$dirBtnY = $dirPath.Location.Y
+$dirBtn = CustomBtn -targetTextBox $dirPath -xLocation $dirBtnX -yLocation $dirBtnY -xSize 30 -ySize 20 -btnTitle "..."
+$folderDialog = New-Object System.Windows.Forms.FolderBrowserDialog
+$fileDialog = New-Object System.Windows.Forms.OpenFileDialog
+$fileDialog.CheckFileExists = $true
+$fileDialog.Multiselect = $false
+$fileDialog.Title = "Select File"
+
+$dirBtn.Add_Click({
+    $choice = [System.Windows.Forms.MessageBox]::Show("Select YES for file, NO for folder.", "Pick Type", [System.Windows.Forms.MessageBoxButtons]::YesNoCancel)
+
+    switch ($choice) {
+        'Yes' {
+            if ($fileDialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+                $dirPath.Text = $fileDialog.FileName
+            }
+        }
+        'No' {
+            if ($folderDialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+                $dirPath.Text = $folderDialog.SelectedPath
+            }
+        }
     }
 })
 
-# Delete Task Button
-$deleteTaskButton = New-Object System.Windows.Forms.Button
-$deleteTaskButton.Text = "Delete Task"
-$deleteTaskButton.Location = New-Object System.Drawing.Point(20,230)
-$tabPage2.Controls.Add($deleteTaskButton)
+$registerTaskBtn = CustomBtn -targetTextBox $dirPath -xLocation 20 -yLocation 160 -xSize 100 -ySize 20 -btnTitle "Register Task"
+$registerTaskBtn.Add_Click({
 
-$deleteTaskButton.Add_Click({
-    $selectedTask = $taskList.SelectedItem
-    if ($selectedTask) {
-        Start-Process powershell.exe -ArgumentList "-ExecutionPolicy Bypass -File .\tools\delete_task.ps1 -taskName '$selectedTask'" -WindowStyle Hidden
-        Load-Tasks
-        $taskDetails.Text = ""
+    if (-not (Test-Path -Path $dirPath.Text)) {
+        [System.Windows.Forms.MessageBox]::Show(
+            "The provided path is invalid. Please provide a valid file or directory path.",
+            "Invalid Path",
+            [System.Windows.Forms.MessageBoxButtons]::OK,
+            [System.Windows.Forms.MessageBoxIcon]::Error
+        )
+        return
+    }
+
+    if ([string]::IsNullOrWhiteSpace($dirPath.Text)) {
+        [System.Windows.Forms.MessageBox]::Show(
+            "Please provide a valid file or directory path before registering the task.",
+            "Missing Path",
+            [System.Windows.Forms.MessageBoxButtons]::OK,
+            [System.Windows.Forms.MessageBoxIcon]::Error
+        )
+        return
+    }
+
+    $selectedDate = $datePicker.Value.Date
+    $selectedTime = $timePicker.Value.TimeOfDay
+    $selectedDateTime = $selectedDate.Add($selectedTime)
+
+    $currentDateTime = Get-Date
+
+    if ($selectedDateTime -lt $currentDateTime) {
+        [System.Windows.Forms.MessageBox]::Show(
+            "Scheduled time must be in the future. Please pick a valid future date and time.",
+            "Invalid Time",
+            [System.Windows.Forms.MessageBoxButtons]::OK,
+            [System.Windows.Forms.MessageBoxIcon]::Warning
+        )
+        return
+    }
+
+    $dateStr = $datePicker.Value.ToString("yyyyMMdd")
+    $timeStr = $timePicker.Value.ToString("HHmm")
+    $path = $dirPath.Text
+    $guid = [guid]::NewGuid().ToString()
+    $taskId = "task_" + $guid.Substring(0, 8)
+    Write-Host "Created $taskId"
+
+    $scriptPath = (Resolve-Path -Path "$PSScriptRoot\..\logic\registerTask.ps1").Path
+    $arguments = "-ExecutionPolicy Bypass -NoProfile -File `"$scriptPath`" -date `"$dateStr`" -time `"$timeStr`" -path `"$path`" -taskId `"$taskId`""
+
+    try {
+        Start-Process -FilePath "powershell.exe" -ArgumentList $arguments -WindowStyle Hidden
+        [System.Windows.Forms.MessageBox]::Show(
+            "Task registered successfully!",
+            "Success",
+            [System.Windows.Forms.MessageBoxButtons]::OK,
+            [System.Windows.Forms.MessageBoxIcon]::Information
+        )
+    }
+    catch {
+        [System.Windows.Forms.MessageBox]::Show(
+            "Failed to register task. Please try again.",
+            "Error",
+            [System.Windows.Forms.MessageBoxButtons]::OK,
+            [System.Windows.Forms.MessageBoxIcon]::Error
+        )
     }
 })
 
-# Show Form
-$form.ShowDialog()
+
+
+$bombTab.Controls.Add($deletedAtPlaceholder)
+$bombTab.Controls.Add($datePlaceholder)
+$bombTab.Controls.Add($timePlaceholder)
+$bombTab.Controls.Add($directoryPlaceholder)
+$bombTab.Controls.Add($datePicker)
+$bombTab.Controls.Add($timePicker)
+$bombTab.Controls.Add($dirPath)
+$bombTab.Controls.Add($dirBtn)
+$bombTab.Controls.Add($registerTaskBtn)
+$tabControl.TabPages.Add($bombTab)
+$mainForm.Controls.Add($tabControl)
+$mainForm.ShowDialog()

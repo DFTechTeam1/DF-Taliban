@@ -38,10 +38,10 @@ function registerTask {
         [string]$taskId
     )
 
-    $fileRemover = "C:\Users\newma\Project\DF-Taliban\main\taliban_logic\fileRemover.ps1"
+    $fileRemover = "$PSScriptRoot\fileRemover.ps1"
 
     try {
-        $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$fileRemover`" -path `"$path`""
+        $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$fileRemover`" -pathDirectory `"$path`""
         $trigger = New-ScheduledTaskTrigger -Once -At $triggerTime
         $principal = New-ScheduledTaskPrincipal -UserId "NT AUTHORITY\SYSTEM" -LogonType ServiceAccount -RunLevel Highest
         $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries `
@@ -69,6 +69,9 @@ function registerTask {
 
 if (-not (checkAdminPrivileges)) {
     restartScriptAsAdmin -date $date -time $time -path $path -taskId $taskId
+} else {
+    [System.Windows.Forms.MessageBox]::Show("Running with elevated privileges", "Admin")
 }
+
 
 registerTask -triggerTime $validatedDatetime -path $path -taskId $taskId
